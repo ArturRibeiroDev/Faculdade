@@ -1,9 +1,15 @@
+console.log('=== SISTEMA DE MONITORAMENTO DE ESTOQUE ===');
+console.log('Estoque inicial carregado: 500 unidades');
+console.log('Regra ativa: reposição automática abaixo de 80 unidades (máx: 2 vezes)\n');
+
 let estoque = 500;
 let reposicoes = 0;
 let vendasParciais = 0;
 
 for (let dia = 1; dia <= 30; dia++) {
 
+    console.log(`\n--- DIA ${dia} ---`);
+    console.log(`Estoque antes da venda: ${estoque}`);
     let venda = parseInt(prompt(`Dia ${dia} - Quantidade vendida:`));
 
     let vendido = venda;
@@ -11,13 +17,13 @@ for (let dia = 1; dia <= 30; dia++) {
     if (venda > estoque) {
         vendido = estoque;
         vendasParciais++;
-        console.log(`VENDA PARCIAL no dia ${dia}: solicitado ${venda}, vendido ${vendido}`);
+        console.log(`[Dia ${dia}] Venda ajustada: cliente pediu ${venda}, mas só havia ${vendido} em estoque.`);
     }
 
     estoque -= vendido;
 
     if (estoque === 0) {
-        console.log(`RUPTURA DE ESTOQUE no dia ${dia}`);
+        console.log(`[Dia ${dia}] Estoque zerado! Operações interrompidas.`);
         break;
     }
 
@@ -25,14 +31,14 @@ for (let dia = 1; dia <= 30; dia++) {
         if (reposicoes < 2) {
             estoque += 200;
             reposicoes++;
-            console.log(`Reposição realizada no dia ${dia}. Novo estoque: ${estoque}`);
+            console.log(`[Dia ${dia}] Reposição automática ativada (+200 unidades). \nEstoque atual: ${estoque}`);
         } else {
-            console.log(`REPOSIÇÃO ESGOTADA no dia ${dia} --- estoque crítico`);
+            console.log(`[Dia ${dia}] Limite de reposições atingido. Situação crítica!`);
         }
     }
 }
 
-console.log("===== RESULTADO FINAL =====");
-console.log(`Estoque final: ${estoque}`);
-console.log(`Total de reposições: ${reposicoes}`);
-console.log(`Total de dias com venda parcial: ${vendasParciais}`);
+console.log("\n===== RELATÓRIO FINAL =====");
+console.log(` Estoque restante: ${estoque}`);
+console.log(` Reposições realizadas: ${reposicoes}`);
+console.log(` Dias com venda parcial: ${vendasParciais}`);
