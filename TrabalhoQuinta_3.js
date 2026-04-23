@@ -4,13 +4,7 @@ let opcao;
 
 while (true) {
 
-    opcao = parseInt(prompt(
-`=== MENU ===
-1 - Deposito
-2 - Saque
-3 - Consultar saldo
-0 - Sair
-Escolha do usuário: `));
+    opcao = parseInt(prompt("=== MENU === \n 1 - Depósito \n 2 - Saque \n 3 - Consultar saldo \n 0 - Sair \n Escolha do usuário: "));
 
     if (opcao === 1) {
         let valor = parseFloat(prompt("Valor do depósito: "));
