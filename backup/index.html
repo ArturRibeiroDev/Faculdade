@@ -1,0 +1,1966 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MetroPixel — Relações Matemáticas</title>
+<style>
+:root {
+  --panel: #1a1c2c;
+  --panel2: #252740;
+  --panel3: #2d3055;
+  --bd: #3d4070;
+  --bd2: #5a5e99;
+  --map-bg: #f5f5f0;
+  --map-grid: #ddddd8;
+  --c-ref: #9b5de5;
+  --c-sim: #f5c518;
+  --c-tra: #00bbf9;
+  --c-eq: #00c87a;
+  --white: #ffffff;
+  --cream: #faf8f0;
+  --black: #111111;
+  --gray: #888899;
+  --ltgray: #ccccdd;
+  --green: #00c87a;
+  --yellow: #f5c518;
+  --red: #ff3d5a;
+  --blue: #00bbf9;
+  --purple: #9b5de5;
+  --font: "Courier New", "Lucida Console", monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; }
+body {
+  font-family: var(--font);
+  background: var(--panel);
+  color: #eef;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.px-btn {
+  font-family: var(--font);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 8px 14px;
+  border: 3px solid var(--bd2);
+  cursor: pointer;
+  background: var(--panel2);
+  color: #eef;
+  box-shadow: 3px 3px 0 #000a;
+  transition: transform .07s, box-shadow .07s, background .15s;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+.px-btn:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 #000a; }
+.px-btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 #000a; }
+.px-btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+.px-btn.g { border-color: var(--green); color: var(--green); }
+.px-btn.y { border-color: var(--yellow); color: var(--yellow); }
+.px-btn.r { border-color: var(--red); color: var(--red); }
+.px-btn.b { border-color: var(--blue); color: var(--blue); }
+.px-btn.p { border-color: var(--purple); color: var(--purple); }
+
+.screen {
+  position: fixed;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.screen.active { display: flex; }
+
+#s-menu {
+  background: var(--panel);
+  gap: 0;
+}
+.menu-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(157, 93, 229, .07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(157, 93, 229, .07) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+.menu-wrap {
+  position: relative;
+  width: min(520px, calc(100% - 28px));
+  text-align: center;
+}
+.menu-logo {
+  font-size: 36px;
+  font-weight: 900;
+  letter-spacing: .12em;
+  color: var(--green);
+  text-shadow: 3px 3px 0 #000, 0 0 24px rgba(0, 200, 122, .5);
+  margin-bottom: 6px;
+  line-height: 1.05;
+}
+.menu-logo-sub {
+  font-size: 11px;
+  color: var(--gray);
+  letter-spacing: .14em;
+  margin-bottom: 24px;
+  display: block;
+}
+.menu-deco {
+  font-size: 23px;
+  color: rgba(0, 200, 122, .24);
+  margin-bottom: 18px;
+  line-height: 1.3;
+  letter-spacing: .1em;
+  white-space: pre-line;
+}
+.menu-btns { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.menu-btns .px-btn { width: min(280px, 100%); text-align: center; font-size: 11px; min-height: 42px; }
+.menu-corner { position: absolute; bottom: 16px; right: 16px; font-size: 9px; color: var(--bd2); }
+.legend-row { display: flex; gap: 14px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+.leg { display: flex; align-items: center; gap: 5px; font-size: 10px; }
+.leg-dot { width: 14px; height: 14px; border: 3px solid #000; flex-shrink: 0; }
+.leg-dot.c { border-radius: 50%; background: #fff; }
+.leg-dot.s { background: #fff; }
+.leg-dot.d { transform: rotate(45deg); width: 12px; height: 12px; background: #fff; }
+
+.content-screen {
+  background: var(--panel);
+  padding: 22px;
+  overflow-y: auto;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+.content-wrap {
+  width: min(940px, 100%);
+  margin: 0 auto;
+  padding-bottom: 26px;
+}
+.content-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+  border-bottom: 3px solid var(--bd);
+  padding-bottom: 12px;
+}
+.content-title {
+  font-size: 17px;
+  color: var(--green);
+  letter-spacing: .08em;
+  line-height: 1.35;
+}
+.content-sub {
+  color: var(--gray);
+  font-size: 12px;
+  margin-top: 6px;
+  line-height: 1.7;
+}
+.panel-box {
+  background: var(--panel2);
+  border: 3px solid var(--bd);
+  box-shadow: 3px 3px 0 #000a;
+  padding: 14px;
+}
+.story-grid, .quiz-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 12px;
+}
+.story-beats { display: grid; gap: 10px; }
+.beat {
+  background: var(--panel2);
+  border: 3px solid var(--bd);
+  border-left-width: 8px;
+  border-left-color: var(--blue);
+  box-shadow: 3px 3px 0 #000a;
+  padding: 13px;
+}
+.beat:nth-child(2) { border-left-color: var(--yellow); }
+.beat:nth-child(3) { border-left-color: var(--green); }
+.beat h3, .panel-box h3 {
+  font-size: 13px;
+  color: var(--yellow);
+  margin-bottom: 8px;
+}
+.beat p, .panel-box p, .rel-desc, .feedback, .quiz-meta {
+  color: var(--ltgray);
+  font-size: 13px;
+  line-height: 1.75;
+}
+.content-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.rel-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.rel-card {
+  background: var(--panel2);
+  border: 3px solid var(--bd);
+  box-shadow: 3px 3px 0 #000a;
+  padding: 12px;
+}
+.rel-card-h {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  padding-bottom: 5px;
+  border-bottom: 2px solid var(--bd);
+}
+.rel-card.ref .rel-card-h { color: var(--c-ref); }
+.rel-card.sim .rel-card-h { color: var(--c-sim); }
+.rel-card.tra .rel-card-h { color: var(--c-tra); }
+.rel-card.eq .rel-card-h { color: var(--c-eq); }
+.rel-math {
+  font-size: 13px;
+  color: var(--yellow);
+  margin-bottom: 6px;
+  line-height: 1.7;
+}
+.rel-ex {
+  margin-top: 7px;
+  font-size: 12px;
+  color: var(--green);
+  padding: 7px;
+  border: 2px solid var(--bd);
+  background: var(--panel3);
+  line-height: 1.65;
+}
+
+.quiz-card {
+  background: var(--panel2);
+  border: 3px solid var(--bd);
+  box-shadow: 3px 3px 0 #000a;
+  padding: 14px;
+}
+.quiz-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--gray);
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+.bar {
+  height: 12px;
+  border: 2px solid var(--bd2);
+  background: #0b0d18;
+  margin-bottom: 12px;
+}
+.bar-fill {
+  height: 100%;
+  width: 0;
+  background: repeating-linear-gradient(90deg, var(--green) 0 12px, #54e7aa 12px 18px);
+  transition: width .18s;
+}
+.question-text {
+  color: #eef;
+  font-size: 16px;
+  line-height: 1.55;
+  margin-bottom: 12px;
+}
+.options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.answer-btn {
+  min-height: 52px;
+  text-align: left;
+  background: var(--panel3);
+  border: 3px solid var(--bd2);
+  color: #eef;
+  box-shadow: 3px 3px 0 #0008;
+  padding: 9px;
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1.4;
+}
+.answer-btn.correct { border-color: var(--green); color: var(--green); background: #12382d; }
+.answer-btn.wrong { border-color: var(--red); color: var(--red); background: #3b1520; }
+.answer-btn:disabled { cursor: not-allowed; opacity: .76; }
+.feedback {
+  min-height: 74px;
+  margin-top: 12px;
+  padding: 10px;
+  border: 3px solid var(--bd);
+  background: #111522;
+}
+.feedback.good { border-color: var(--green); }
+.feedback.bad { border-color: var(--red); }
+
+#s-game { flex-direction: row; align-items: stretch; justify-content: stretch; padding: 0; }
+#gtop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 46px;
+  background: var(--panel);
+  border-bottom: 3px solid var(--bd);
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  gap: 12px;
+  z-index: 30;
+}
+.gtop-logo { font-size: 12px; color: var(--green); letter-spacing: .1em; font-weight: 900; flex-shrink: 0; }
+.gsep { width: 3px; height: 22px; background: var(--bd); flex-shrink: 0; }
+.gstat { display: flex; flex-direction: column; gap: 1px; flex-shrink: 0; }
+.gstat-l { font-size: 8px; color: var(--gray); text-transform: uppercase; letter-spacing: .1em; }
+.gstat-v { font-size: 12px; line-height: 1; font-weight: 900; }
+.gstat-v.g { color: var(--green); }
+.gstat-v.y { color: var(--yellow); }
+.gstat-v.r { color: var(--red); }
+.gstat-v.w { color: #eef; }
+#restrict-bar {
+  flex: 1;
+  text-align: center;
+  font-size: 9px;
+  color: var(--red);
+  padding: 3px 8px;
+  border: 2px solid var(--red);
+  background: rgba(255, 61, 90, .1);
+  display: none;
+  line-height: 1.5;
+}
+#restrict-bar.on { display: block; }
+#gbody { position: absolute; top: 46px; bottom: 0; left: 0; right: 0; display: flex; }
+#sleft {
+  width: 186px;
+  flex-shrink: 0;
+  background: var(--panel);
+  border-right: 3px solid var(--bd);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.sb { padding: 8px 8px 6px; border-bottom: 3px solid var(--bd); }
+.sbt {
+  font-size: 9px;
+  color: var(--gray);
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.sbt::before { content: "▶"; font-size: 8px; color: var(--green); }
+#laws-wrap { flex: 1; overflow-y: auto; padding: 6px 8px; display: flex; flex-direction: column; gap: 5px; }
+.law {
+  background: var(--panel2);
+  border: 2px solid var(--bd);
+  padding: 7px 8px 7px 11px;
+  opacity: .28;
+  transition: opacity .3s, border-color .3s;
+  position: relative;
+}
+.law::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
+.law.ref::before { background: var(--c-ref); }
+.law.sim::before { background: var(--c-sim); }
+.law.tra::before { background: var(--c-tra); }
+.law.eq::before { background: var(--c-eq); }
+.law.on { opacity: 1; }
+.law.on.ref { border-color: var(--c-ref); }
+.law.on.sim { border-color: var(--c-sim); }
+.law.on.tra { border-color: var(--c-tra); }
+.law.on.eq { border-color: var(--c-eq); }
+.law-name { font-size: 10px; font-weight: 900; margin-bottom: 2px; }
+.law.ref .law-name { color: var(--c-ref); }
+.law.sim .law-name { color: var(--c-sim); }
+.law.tra .law-name { color: var(--c-tra); }
+.law.eq .law-name { color: var(--c-eq); }
+.law-d { font-size: 9px; color: var(--gray); line-height: 1.65; }
+.law.on .law-d { color: #eef; }
+#mission-text { font-size: 10px; color: var(--ltgray); line-height: 1.7; white-space: pre-line; }
+#map-area {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: var(--map-bg);
+  background-image:
+    linear-gradient(var(--map-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--map-grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+#gsvg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+#toolbar {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 20;
+  background: var(--panel);
+  border: 3px solid var(--bd);
+  box-shadow: 3px 3px 0 #000a;
+  padding: 7px 12px;
+}
+#toolbar .px-btn { font-size: 9px; padding: 7px 11px; }
+#start-ov {
+  position: absolute;
+  inset: 0;
+  background: rgba(245, 245, 240, .92);
+  z-index: 25;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+}
+#start-ov.gone { display: none; }
+.start-box {
+  background: var(--panel);
+  border: 4px solid var(--bd2);
+  box-shadow: 5px 5px 0 #000a;
+  padding: 24px 30px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+.start-phase { font-size: 18px; color: var(--green); letter-spacing: .1em; font-weight: 900; }
+.start-name { font-size: 12px; color: var(--gray); letter-spacing: .08em; }
+.start-miss { font-size: 11px; color: #aab; line-height: 1.8; max-width: 340px; }
+.start-restrict { font-size: 10px; color: var(--red); border: 2px solid var(--red); padding: 4px 8px; background: rgba(255, 61, 90, .08); line-height: 1.8; }
+.start-plan { font-size: 10px; color: var(--bd2); margin-top: 2px; }
+#sright {
+  width: 236px;
+  flex-shrink: 0;
+  background: var(--panel);
+  border-left: 3px solid var(--bd);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+#wb-wrap { flex: 1; padding: 8px; display: flex; flex-direction: column; gap: 6px; overflow: hidden; }
+.wb-title { font-size: 9px; color: var(--yellow); letter-spacing: .1em; margin-bottom: 3px; }
+#whiteboard {
+  background: #fafaf5;
+  border: 4px solid #c8b88a;
+  box-shadow: inset 0 0 0 2px #e8d8b0, 3px 3px 0 #000a;
+  flex: 1;
+  padding: 8px 9px;
+  overflow-y: auto;
+  font-size: 17px;
+  line-height: 1.55;
+  position: relative;
+}
+#whiteboard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(transparent, transparent 27px, #d4d4cc 27px, #d4d4cc 28px);
+  pointer-events: none;
+  opacity: .5;
+}
+.wb-set-a { color: #333; font-size: 15px; margin-bottom: 4px; position: relative; }
+.wb-label { color: #888; font-size: 13px; letter-spacing: .05em; position: relative; }
+.wb-rel { color: #333; font-size: 13px; line-height: 1.55; word-break: break-all; margin-bottom: 4px; position: relative; }
+.wb-pair { display: inline; margin-right: 3px; }
+.wb-pair.ref { color: var(--c-ref); }
+.wb-pair.sim { color: #c89010; }
+.wb-pair.tra { color: #0088bb; }
+.wb-pair.eq { color: #009950; }
+.wb-divider { border: none; border-top: 2px dashed #ccc; margin: 5px 0; position: relative; }
+.wb-prop { font-size: 14px; display: flex; align-items: center; gap: 5px; position: relative; }
+.wb-note { color: #888; font-size: 12px; line-height: 1.4; margin-top: 4px; position: relative; }
+.wb-prop-y { color: var(--green); }
+.wb-prop-n { color: var(--red); }
+.wb-prop-q { color: #aaa; }
+#ticket-area {
+  border-top: 3px solid var(--bd);
+  padding: 6px 8px 8px;
+  max-height: 180px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.tickets-title {
+  font-size: 9px;
+  color: var(--gray);
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  margin-bottom: 3px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.tickets-title::before { content: "▶"; font-size: 8px; color: var(--green); }
+.ticket {
+  background: var(--cream);
+  border: 2px solid #bbb;
+  border-left: 6px solid;
+  padding: 5px 7px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: relative;
+  box-shadow: 2px 2px 0 #000a;
+  flex-shrink: 0;
+}
+.ticket::after {
+  content: "";
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--panel);
+  border: 2px solid #bbb;
+}
+.ticket.wait { border-left-color: #888; }
+.ticket.transit { border-left-color: var(--blue); }
+.ticket.ok { border-left-color: var(--green); opacity: .7; }
+.ticket.dead { border-left-color: var(--red); opacity: .55; }
+.tk-route { font-size: 18px; color: #222; letter-spacing: .05em; }
+.tk-status { font-size: 9px; color: #666; font-weight: 700; }
+.tk-bar { height: 3px; background: #ddd; margin-top: 2px; width: calc(100% - 14px); }
+.tk-fill { height: 100%; transition: width 1s linear, background .3s; }
+#score-area { padding: 6px 8px 8px; border-top: 3px solid var(--bd); display: flex; flex-direction: column; gap: 3px; }
+.sc { display: flex; justify-content: space-between; font-size: 10px; color: var(--gray); }
+.sc .v { color: #eef; }
+.sc.tot { color: var(--yellow); }
+.sc.tot .v { color: var(--yellow); font-size: 13px; font-weight: 900; }
+#toasts {
+  position: fixed;
+  top: 56px;
+  right: 10px;
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  pointer-events: none;
+  max-width: 240px;
+}
+.toast {
+  background: var(--panel);
+  border: 3px solid var(--bd);
+  box-shadow: 3px 3px 0 #000a;
+  padding: 7px 9px;
+  font-size: 10px;
+  line-height: 1.6;
+  transform: translateX(280px);
+  transition: transform .2s;
+}
+.toast.in { transform: translateX(0); }
+.toast.s { border-color: var(--green); }
+.toast.e { border-color: var(--red); }
+.toast.i { border-color: var(--blue); }
+.toast.w { border-color: var(--yellow); }
+.th { font-size: 11px; font-weight: 900; margin-bottom: 1px; }
+.toast.s .th { color: var(--green); }
+.toast.e .th { color: var(--red); }
+.toast.i .th { color: var(--blue); }
+.toast.w .th { color: var(--yellow); }
+.tbod { color: var(--gray); }
+#reveal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(.4);
+  background: var(--panel);
+  border: 4px solid var(--green);
+  box-shadow: 5px 5px 0 #000a, 0 0 30px rgba(0, 200, 122, .4);
+  padding: 18px 28px;
+  text-align: center;
+  z-index: 600;
+  opacity: 0;
+  pointer-events: none;
+  transition: all .3s cubic-bezier(.34, 1.56, .64, 1);
+}
+#reveal.on { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+.rv-pre { font-size: 10px; color: var(--gray); margin-bottom: 4px; letter-spacing: .2em; }
+.rv-name { font-size: 17px; font-weight: 900; margin-bottom: 3px; }
+.rv-sub { font-size: 13px; color: var(--gray); line-height: 1.6; max-width: 260px; }
+#modal-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 10, 20, .9);
+  z-index: 700;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+#modal-bg.on { display: flex; }
+.modal {
+  background: var(--panel);
+  border: 4px solid var(--bd2);
+  box-shadow: 5px 5px 0 #000a;
+  padding: 26px 30px;
+  max-width: 460px;
+  width: 92%;
+  text-align: center;
+}
+.m-icon { font-size: 32px; margin-bottom: 8px; }
+.m-title { font-size: 15px; color: var(--green); margin-bottom: 8px; letter-spacing: .08em; }
+.m-body { font-size: 12px; color: var(--gray); line-height: 1.8; margin-bottom: 12px; }
+.m-body strong { color: #eef; }
+.m-badges { display: flex; justify-content: center; flex-wrap: wrap; gap: 5px; margin-bottom: 12px; }
+.mbadge { font-size: 10px; padding: 3px 8px; border: 2px solid; letter-spacing: .06em; }
+.mbadge.ref { color: var(--c-ref); border-color: var(--c-ref); }
+.mbadge.sim { color: var(--c-sim); border-color: var(--c-sim); }
+.mbadge.tra { color: var(--c-tra); border-color: var(--c-tra); }
+.mbadge.eq { color: var(--c-eq); border-color: var(--c-eq); }
+.m-stats { display: flex; justify-content: center; gap: 18px; margin-bottom: 16px; }
+.mst { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.mst-v { font-size: 20px; color: var(--yellow); font-weight: 900; }
+.mst-l { font-size: 9px; color: var(--gray); letter-spacing: .1em; }
+.m-btns { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.fscore {
+  position: fixed;
+  font-size: 12px;
+  font-weight: 900;
+  pointer-events: none;
+  z-index: 800;
+  color: var(--green);
+  animation: fUp 1.1s ease forwards;
+}
+@keyframes fUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-45px); } }
+#pf { position: fixed; inset: 0; background: var(--panel); z-index: 900; display: none; align-items: center; justify-content: center; flex-direction: column; gap: 8px; }
+#pf.on { display: flex; }
+.pfn { font-size: 64px; color: var(--green); text-shadow: 4px 4px 0 #000; font-weight: 900; }
+.pfname { font-size: 13px; color: var(--gray); letter-spacing: .1em; }
+@keyframes errF { 0%, 100% { opacity: 1; } 50% { opacity: .15; } }
+.errflash { animation: errF .4s ease 3; }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--panel); }
+::-webkit-scrollbar-thumb { background: var(--bd2); }
+
+@media (max-width: 900px) {
+  html, body { overflow: auto; }
+  .screen { position: relative; min-height: 100vh; }
+  #s-game { min-height: 780px; position: relative; }
+  #gbody { flex-direction: column; top: 46px; bottom: auto; min-height: 720px; }
+  #sleft, #sright { width: 100%; max-height: none; border: 0; }
+  #sleft { border-bottom: 3px solid var(--bd); }
+  #sright { border-top: 3px solid var(--bd); }
+  #laws-wrap { flex-direction: row; overflow-x: auto; }
+  .law { min-width: 190px; }
+  #map-area { min-height: 460px; }
+  #toolbar { flex-wrap: wrap; width: calc(100% - 16px); justify-content: center; }
+  .story-grid, .quiz-grid, .rel-grid { grid-template-columns: 1fr; }
+  .content-head { flex-direction: column; }
+}
+
+@media (max-width: 580px) {
+  .menu-logo { font-size: 30px; }
+  .menu-deco { font-size: 18px; }
+  .options-grid { grid-template-columns: 1fr; }
+  #gtop { gap: 7px; overflow-x: auto; }
+  .gstat-l { font-size: 7px; }
+  .gstat-v { font-size: 11px; }
+}
+</style>
+</head>
+<body>
+
+<div class="screen active" id="s-menu">
+  <div class="menu-grid"></div>
+  <div class="menu-wrap">
+    <div class="menu-logo">METRO<br>PIXEL</div>
+    <span class="menu-logo-sub">RELAÇÕES MATEMÁTICAS NO SISTEMA DE METRÔ</span>
+    <div class="menu-deco">○──□──◇──○──□
+│     │     │
+◇──○──□──◇──○</div>
+    <div class="legend-row">
+      <div class="leg"><div class="leg-dot c"></div><span style="color:#aab">Círculo</span></div>
+      <div class="leg"><div class="leg-dot s"></div><span style="color:#aab">Quadrado</span></div>
+      <div class="leg"><div class="leg-dot d"></div><span style="color:#aab">Losango</span></div>
+    </div>
+    <div class="legend-row">
+      <div class="leg"><span style="color:var(--c-ref)">■</span><span style="color:var(--c-ref)">Reflexiva</span></div>
+      <div class="leg"><span style="color:var(--c-sim)">■</span><span style="color:var(--c-sim)">Simétrica</span></div>
+      <div class="leg"><span style="color:var(--c-tra)">■</span><span style="color:var(--c-tra)">Transitiva</span></div>
+      <div class="leg"><span style="color:var(--c-eq)">■</span><span style="color:var(--c-eq)">Equivalência</span></div>
+    </div>
+    <div class="menu-btns">
+      <button class="px-btn g" onclick="goGame()">▶ JOGAR</button>
+      <button class="px-btn y" onclick="goRel()">? APRENDER RELAÇÕES</button>
+      <button class="px-btn b" onclick="goQuiz()">▣ QUIZ</button>
+      <button class="px-btn p" onclick="goStory()">◇ HISTÓRIA</button>
+      <button class="px-btn" id="sound-menu" onclick="toggleSound()">SOM ON</button>
+    </div>
+  </div>
+  <div class="menu-corner">v3.0 · JOGO ORIGINAL RESTAURADO</div>
+</div>
+
+<div class="screen content-screen" id="s-story">
+  <div class="content-wrap">
+    <div class="content-head">
+      <div>
+        <div class="content-title">BUG NA CIDADE METROPIXEL</div>
+        <div class="content-sub">Você é o engenheiro-chefe chamado para reconstruir a rede inteligente de metrô.</div>
+      </div>
+      <button class="px-btn" onclick="goMenu()">◂ MENU</button>
+    </div>
+    <div class="story-grid">
+      <div class="story-beats">
+        <div class="beat">
+          <h3>1. O sistema apagou conexões</h3>
+          <p>Estações ficaram isoladas e passageiros começaram a acumular tickets sem rota. Cada estação representa um elemento do conjunto A.</p>
+        </div>
+        <div class="beat">
+          <h3>2. Trilhos viram pares de R</h3>
+          <p>Ao traçar linhas entre estações, você visualiza pares da relação R. O quadro lateral traduz o mapa para notação matemática.</p>
+        </div>
+        <div class="beat">
+          <h3>3. As leis aparecem durante o jogo</h3>
+          <p>Reflexividade, simetria, transitividade e equivalência são desbloqueadas como conceitos quando a rede construída permite mostrar essas ideias.</p>
+        </div>
+      </div>
+      <aside class="panel-box">
+        <h3>Metáfora matemática</h3>
+        <p>Estação = elemento de A.<br>Linha = conexão didática entre elementos.<br>Par ordenado = registro no quadro R.<br>Baldeação = visual para discutir transitividade.</p>
+        <div class="content-actions">
+          <button class="px-btn g" onclick="goGame()">JOGAR</button>
+          <button class="px-btn y" onclick="goRel()">APRENDER</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<div class="screen content-screen" id="s-rel">
+  <div class="content-wrap">
+    <div class="content-head">
+      <div>
+        <div class="content-title">CENTRAL DE TREINAMENTO METROPIXEL</div>
+        <div class="content-sub">Explicação rápida para apresentar os conceitos antes ou depois da partida.</div>
+      </div>
+      <button class="px-btn" onclick="goMenu()">◂ MENU</button>
+    </div>
+    <div class="rel-grid">
+      <div class="rel-card">
+        <div class="rel-card-h" style="color:var(--blue)">O QUE É RELAÇÃO</div>
+        <div class="rel-math">R ⊆ A×A</div>
+        <div class="rel-desc">Uma relação é um conjunto de pares ordenados formados com elementos de A.</div>
+        <div class="rel-ex">Ex: A = {A, B, C}<br>R = {(A,B), (B,C)}</div>
+      </div>
+      <div class="rel-card ref">
+        <div class="rel-card-h">REFLEXIVA</div>
+        <div class="rel-math">∀a ∈ A: (a,a) ∈ R</div>
+        <div class="rel-desc">Todo elemento se relaciona consigo mesmo.</div>
+        <div class="rel-ex">No metrô: cada estação tem um atendimento para ela mesma. A→A.</div>
+      </div>
+      <div class="rel-card sim">
+        <div class="rel-card-h">SIMÉTRICA</div>
+        <div class="rel-math">(a,b) ∈ R → (b,a) ∈ R</div>
+        <div class="rel-desc">Se A se conecta com B, B também se conecta com A.</div>
+        <div class="rel-ex">No metrô: linha de ida e volta. A→B e B→A.</div>
+      </div>
+      <div class="rel-card tra">
+        <div class="rel-card-h">TRANSITIVA</div>
+        <div class="rel-math">(a,b) ∈ R ∧ (b,c) ∈ R → (a,c) ∈ R</div>
+        <div class="rel-desc">Se A se relaciona com B e B com C, A precisa se relacionar com C.</div>
+        <div class="rel-ex">No jogo, a baldeação ajuda a visualizar; matematicamente o par (A,C) precisa estar em R.</div>
+      </div>
+      <div class="rel-card eq">
+        <div class="rel-card-h">EQUIVALÊNCIA</div>
+        <div class="rel-math">Reflexiva + Simétrica + Transitiva</div>
+        <div class="rel-desc">A relação satisfaz as três propriedades ao mesmo tempo.</div>
+        <div class="rel-ex">Rede completa e consistente: todos os requisitos aparecem no quadro da relação.</div>
+      </div>
+    </div>
+    <div class="content-actions">
+      <button class="px-btn g" onclick="goGame()">JOGAR</button>
+      <button class="px-btn b" onclick="goQuiz()">QUIZ</button>
+      <button class="px-btn" onclick="goMenu()">MENU</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen content-screen" id="s-quiz">
+  <div class="content-wrap">
+    <div class="content-head">
+      <div>
+        <div class="content-title">TESTE DE ENGENHEIRO DO METRÔ</div>
+        <div class="content-sub">5 perguntas sorteadas de um banco com 10 questões.</div>
+      </div>
+      <button class="px-btn" onclick="goMenu()">◂ MENU</button>
+    </div>
+    <div class="quiz-grid">
+      <div class="quiz-card">
+        <div class="quiz-top">
+          <span id="quiz-counter">Pergunta 1/5</span>
+          <span id="quiz-score">Acertos: 0</span>
+        </div>
+        <div class="bar"><div class="bar-fill" id="quiz-progress"></div></div>
+        <div class="question-text" id="quiz-question"></div>
+        <div class="options-grid" id="quiz-options"></div>
+        <div class="feedback" id="quiz-feedback">Escolha uma alternativa para ver o feedback.</div>
+        <div class="content-actions">
+          <button class="px-btn g" id="quiz-next" onclick="nextQuiz()" disabled>PRÓXIMA</button>
+          <button class="px-btn b" onclick="startQuiz()">NOVO SORTEIO</button>
+        </div>
+      </div>
+      <aside class="panel-box">
+        <h3>Como usar na apresentação</h3>
+        <p>O quiz é uma opção livre do menu. Ele reforça a definição formal das propriedades sem travar a partida principal.</p>
+        <div class="content-actions">
+          <button class="px-btn g" onclick="goGame()">JOGAR</button>
+          <button class="px-btn y" onclick="goRel()">APRENDER</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="s-game">
+  <div id="gtop">
+    <span class="gtop-logo">METRO<span style="color:var(--yellow)">PIXEL</span></span>
+    <div class="gsep"></div>
+    <div class="gstat"><span class="gstat-l">Fase</span><span class="gstat-v w" id="h-phase">1/5</span></div>
+    <div class="gstat"><span class="gstat-l">Pts</span><span class="gstat-v g" id="h-score">0</span></div>
+    <div class="gstat"><span class="gstat-l">Entregues</span><span class="gstat-v y" id="h-del">0</span></div>
+    <div class="gstat"><span class="gstat-l">Presos</span><span class="gstat-v r" id="h-str">0</span></div>
+    <div id="restrict-bar"></div>
+    <div style="margin-left:auto;display:flex;gap:6px">
+      <button class="px-btn y" style="font-size:9px;padding:5px 9px" onclick="skipPhase()">PRÓX ▶</button>
+      <button class="px-btn" style="font-size:9px;padding:5px 9px" onclick="goMenu()">◂ MENU</button>
+    </div>
+  </div>
+  <div id="gbody">
+    <div id="sleft">
+      <div class="sb">
+        <div class="sbt">Missão</div>
+        <div id="mission-text">...</div>
+      </div>
+      <div class="sb" style="padding-bottom:4px"><div class="sbt">Leis Descobertas</div></div>
+      <div id="laws-wrap">
+        <div class="law ref" id="law-ref"><div class="law-name">REFLEXIVA</div><div class="law-d" id="ld-ref">Bloqueada...</div></div>
+        <div class="law sim" id="law-sim"><div class="law-name">SIMÉTRICA</div><div class="law-d" id="ld-sim">Bloqueada...</div></div>
+        <div class="law tra" id="law-tra"><div class="law-name">TRANSITIVA</div><div class="law-d" id="ld-tra">Bloqueada...</div></div>
+        <div class="law eq" id="law-eq"><div class="law-name">EQUIVALÊNCIA</div><div class="law-d" id="ld-eq">Bloqueada...</div></div>
+      </div>
+    </div>
+    <div id="map-area">
+      <div id="start-ov">
+        <div class="start-box">
+          <div class="start-phase" id="so-phase">FASE 1</div>
+          <div class="start-name" id="so-name">PRIMEIROS TRILHOS</div>
+          <div class="start-miss" id="so-miss">...</div>
+          <div class="start-restrict" id="so-restrict" style="display:none"></div>
+          <button class="px-btn g" style="font-size:12px;padding:10px 22px;margin-top:6px" onclick="startPartida()">▶ INICIAR PARTIDA</button>
+          <div class="start-plan">Planeje antes de ligar o metrô!</div>
+        </div>
+      </div>
+      <svg id="gsvg" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="px-glow">
+            <feGaussianBlur stdDeviation="2" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <g id="g-edges"></g>
+        <g id="g-prev"></g>
+        <g id="g-stations"></g>
+        <g id="g-pax-dots"></g>
+        <g id="g-transit"></g>
+      </svg>
+      <div id="toolbar">
+        <button class="px-btn" id="btn-draw" onclick="setTool('draw')" style="border-color:var(--green);color:var(--green)">✏ TRAÇAR</button>
+        <button class="px-btn" id="btn-erase" onclick="setTool('erase')">✂ APAGAR</button>
+        <button class="px-btn g" id="btn-run" onclick="toggleRun()"><span id="run-lbl">▶ METRÔ</span></button>
+        <button class="px-btn y" onclick="checkPhase()">✓ VERIFICAR</button>
+        <button class="px-btn r" onclick="resetPhase()">↺ RESET</button>
+      </div>
+    </div>
+    <div id="sright">
+      <div id="wb-wrap">
+        <div class="wb-title">◈ QUADRO DE RELAÇÕES</div>
+        <div id="whiteboard">
+          <div class="wb-set-a" id="wb-A">A = { }</div>
+          <hr class="wb-divider">
+          <div class="wb-label">R ⊆ A×A:</div>
+          <div class="wb-rel" id="wb-R">∅</div>
+          <hr class="wb-divider">
+          <div class="wb-prop wb-prop-q" id="wp-ref"><span style="color:var(--c-ref)">↩</span> Reflexiva: <span id="wpr-v">?</span></div>
+          <div class="wb-prop wb-prop-q" id="wp-sim"><span style="color:var(--c-sim)">↔</span> Simétrica: <span id="wps-v">?</span></div>
+          <div class="wb-prop wb-prop-q" id="wp-tra"><span style="color:var(--c-tra)">→</span> Transitiva: <span id="wpt-v">?</span></div>
+          <div class="wb-prop" style="margin-top:4px;border-top:1px dashed #ccc;padding-top:4px" id="wp-eq"><span style="color:var(--c-eq)">≡</span> Equivalência: <span id="wpe-v">?</span></div>
+          <div class="wb-note">Modelo didático: o jogo registra laços próprios e linhas de ida/volta para focar na construção da rede.</div>
+        </div>
+      </div>
+      <div id="ticket-area">
+        <div class="tickets-title">Tickets de Passageiros</div>
+        <div style="font-size:10px;color:var(--bd2)" id="tk-empty">Aguardando início...</div>
+      </div>
+      <div id="score-area">
+        <div class="sc"><span>Entregues</span><span class="v" id="s-del">0</span></div>
+        <div class="sc"><span>Presos</span><span class="v" id="s-str">0</span></div>
+        <div class="sc"><span>Linhas</span><span class="v" id="s-ln">0</span></div>
+        <div class="sc tot"><span>TOTAL</span><span class="v" id="s-tot">0</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+<div id="reveal">
+  <div class="rv-pre">▸ LEI DESCOBERTA!</div>
+  <div class="rv-name" id="rv-name"></div>
+  <div class="rv-sub" id="rv-sub"></div>
+</div>
+<div id="modal-bg">
+  <div class="modal">
+    <div class="m-icon" id="m-icon">🚇</div>
+    <div class="m-title" id="m-title">FASE COMPLETA!</div>
+    <div class="m-body" id="m-body"></div>
+    <div class="m-badges" id="m-badges"></div>
+    <div class="m-stats" id="m-stats"></div>
+    <div class="m-btns">
+      <button class="px-btn g" id="m-next">PRÓXIMA ▶</button>
+      <button class="px-btn" onclick="resetPhase();closeModal()">↺ REPETIR</button>
+      <button class="px-btn y" onclick="closeModal();goMenu()">MENU</button>
+    </div>
+  </div>
+</div>
+<div id="pf"><div class="pfn" id="pf-n">1</div><div class="pfname" id="pf-name">...</div></div>
+
+<script>
+const SH = { C: "circle", S: "square", D: "diamond" };
+const LC = { ref: "#9b5de5", sim: "#f5c518", tra: "#00bbf9", eq: "#00c87a" };
+const LAWS_D = {
+  ref: { name: "REFLEXIVA", col: LC.ref, sub: "∀a∈A, (a,a)∈R — cada estação serve a si mesma" },
+  sim: { name: "SIMÉTRICA", col: LC.sim, sub: "(a,b)∈R → (b,a)∈R — linha vai e volta" },
+  tra: { name: "TRANSITIVA", col: LC.tra, sub: "(a,b) e (b,c) pedem (a,c) — baldeação como visual" },
+  eq: { name: "EQUIVALÊNCIA", col: LC.eq, sub: "Reflexiva + Simétrica + Transitiva" },
+};
+const PAX_TIME = 10;
+
+const PHASES = [
+  {
+    id: 1, name: "PRIMEIROS TRILHOS",
+    mission: "Conecte as estações ○↔○ para transportar passageiros.\nClique numa estação, depois em outra.",
+    restrict: null,
+    stations: [
+      { id: "A", sh: SH.C, name: "Alto", rx: .18, ry: .32 },
+      { id: "B", sh: SH.C, name: "Bela", rx: .42, ry: .18 },
+      { id: "C", sh: SH.C, name: "Centro", rx: .72, ry: .28 },
+      { id: "D", sh: SH.C, name: "Dique", rx: .82, ry: .60 },
+      { id: "E", sh: SH.C, name: "Estela", rx: .55, ry: .75 },
+      { id: "F", sh: SH.C, name: "Forte", rx: .22, ry: .72 },
+    ],
+    waves: [
+      { from: "A", to: "D", t: 3 }, { from: "B", to: "F", t: 7 },
+      { from: "C", to: "F", t: 12 }, { from: "E", to: "A", t: 18 },
+      { from: "D", to: "B", t: 24 }, { from: "F", to: "C", t: 30 },
+    ],
+    minDel: 3, concepts: ["ref", "sim"],
+    msg: "A rede restaurada mostra <strong>reflexividade</strong> no quadro e <strong>simetria</strong> nas linhas de ida e volta.",
+  },
+  {
+    id: 2, name: "PONTE OBRIGATÓRIA",
+    mission: "□ não liga em □! Use ○ como ponte.\nPense no caminho: □→○→□",
+    restrict: null,
+    stations: [
+      { id: "N", sh: SH.C, name: "Norte", rx: .50, ry: .14 },
+      { id: "L", sh: SH.C, name: "Leste", rx: .82, ry: .48 },
+      { id: "S", sh: SH.C, name: "Sul", rx: .50, ry: .82 },
+      { id: "O", sh: SH.C, name: "Oeste", rx: .18, ry: .48 },
+      { id: "P", sh: SH.S, name: "Praça", rx: .50, ry: .48 },
+      { id: "Q", sh: SH.S, name: "Quinta", rx: .28, ry: .28 },
+      { id: "R", sh: SH.S, name: "Real", rx: .72, ry: .68 },
+      { id: "T", sh: SH.S, name: "Torre", rx: .68, ry: .28 },
+    ],
+    waves: [
+      { from: "P", to: "R", t: 3 }, { from: "Q", to: "T", t: 7 },
+      { from: "N", to: "P", t: 11 }, { from: "L", to: "Q", t: 16 },
+      { from: "R", to: "O", t: 22 }, { from: "T", to: "S", t: 28 },
+      { from: "P", to: "T", t: 34 },
+    ],
+    minDel: 3, concepts: ["tra"],
+    msg: "As pontes mostram a ideia visual de <strong>transitividade</strong>: se P chega em N e N chega em T, discutimos o par P→T no quadro.",
+  },
+  {
+    id: 3, name: "SEM ATALHOS",
+    mission: "TRANSITIVA PROIBIDA!\nCada par deve ter linha direta.\nNão pode haver cadeia A→B→C.",
+    restrict: { type: "no-tra", label: "TRANSITIVA PROIBIDA — Sem baldeações! Cada destino precisa de linha direta." },
+    stations: [
+      { id: "A", sh: SH.C, name: "Alfa", rx: .20, ry: .25 },
+      { id: "B", sh: SH.C, name: "Beta", rx: .60, ry: .18 },
+      { id: "C", sh: SH.C, name: "Gama", rx: .82, ry: .55 },
+      { id: "D", sh: SH.C, name: "Delta", rx: .55, ry: .80 },
+      { id: "E", sh: SH.C, name: "Épsi", rx: .18, ry: .72 },
+      { id: "F", sh: SH.S, name: "Foxt", rx: .40, ry: .50 },
+      { id: "G", sh: SH.S, name: "Golf", rx: .72, ry: .38 },
+    ],
+    waves: [
+      { from: "A", to: "B", t: 4 }, { from: "B", to: "C", t: 9 },
+      { from: "C", to: "D", t: 14 }, { from: "D", to: "E", t: 20 },
+      { from: "E", to: "A", t: 26 }, { from: "F", to: "G", t: 32 },
+    ],
+    minDel: 3, concepts: ["ref", "sim"],
+    msg: "Nesta fase você evita cadeias transitivas. Isso ajuda a comparar uma relação com simetria e reflexividade, mas sem transitividade.",
+  },
+  {
+    id: 4, name: "METRÓPOLE COMPLEXA",
+    mission: "Losangos ◇ só ligam via □!\n□ só liga via ○!\nMonte a cadeia: ○→□→◇",
+    restrict: null,
+    stations: [
+      { id: "N", sh: SH.C, name: "Norte", rx: .50, ry: .10 },
+      { id: "NE", sh: SH.C, name: "NLeste", rx: .80, ry: .25 },
+      { id: "L", sh: SH.C, name: "Leste", rx: .88, ry: .55 },
+      { id: "S", sh: SH.C, name: "Sul", rx: .50, ry: .88 },
+      { id: "O", sh: SH.C, name: "Oeste", rx: .12, ry: .55 },
+      { id: "NO", sh: SH.C, name: "NOeste", rx: .20, ry: .25 },
+      { id: "P1", sh: SH.S, name: "Praça1", rx: .38, ry: .38 },
+      { id: "P2", sh: SH.S, name: "Praça2", rx: .62, ry: .38 },
+      { id: "P3", sh: SH.S, name: "Praça3", rx: .62, ry: .65 },
+      { id: "P4", sh: SH.S, name: "Praça4", rx: .38, ry: .65 },
+      { id: "X", sh: SH.D, name: "Xeque", rx: .50, ry: .52 },
+      { id: "Y", sh: SH.D, name: "Yield", rx: .72, ry: .80 },
+    ],
+    waves: [
+      { from: "X", to: "N", t: 3 }, { from: "Y", to: "O", t: 6 },
+      { from: "N", to: "Y", t: 10 }, { from: "L", to: "X", t: 14 },
+      { from: "S", to: "X", t: 18 }, { from: "X", to: "NE", t: 22 },
+      { from: "Y", to: "N", t: 27 }, { from: "NO", to: "Y", t: 32 },
+    ],
+    minDel: 4, concepts: ["tra", "eq"],
+    msg: "A cadeia ○→□→◇ evidencia a discussão de <strong>transitividade</strong>. Quando tudo fica conectado, o jogo mostra a equivalência no modelo didático.",
+  },
+  {
+    id: 5, name: "EQUIVALÊNCIA PERFEITA",
+    mission: "APENAS SIMÉTRICA!\nSem baldeações — cada par precisa de linha direta de volta.\nMix de ○ □ ◇ — regras de conexão valem!",
+    restrict: { type: "no-tra", label: "SÓ SIMÉTRICA — Linhas diretas apenas! Sem cadeias de 3+." },
+    stations: [
+      { id: "Z1", sh: SH.C, name: "Z1", rx: .18, ry: .20 },
+      { id: "Z2", sh: SH.C, name: "Z2", rx: .50, ry: .12 },
+      { id: "Z3", sh: SH.C, name: "Z3", rx: .82, ry: .20 },
+      { id: "Z4", sh: SH.C, name: "Z4", rx: .88, ry: .55 },
+      { id: "Z5", sh: SH.C, name: "Z5", rx: .50, ry: .88 },
+      { id: "Z6", sh: SH.C, name: "Z6", rx: .12, ry: .55 },
+      { id: "Q1", sh: SH.S, name: "Q1", rx: .35, ry: .40 },
+      { id: "Q2", sh: SH.S, name: "Q2", rx: .65, ry: .40 },
+      { id: "Q3", sh: SH.S, name: "Q3", rx: .65, ry: .70 },
+      { id: "Q4", sh: SH.S, name: "Q4", rx: .35, ry: .70 },
+      { id: "D1", sh: SH.D, name: "D1", rx: .50, ry: .52 },
+      { id: "D2", sh: SH.D, name: "D2", rx: .20, ry: .72 },
+    ],
+    waves: [
+      { from: "Z1", to: "D1", t: 3 }, { from: "D2", to: "Z3", t: 6 },
+      { from: "Q1", to: "Z4", t: 10 }, { from: "Q3", to: "Z6", t: 14 },
+      { from: "Z2", to: "D2", t: 18 }, { from: "D1", to: "Z5", t: 22 },
+      { from: "Z4", to: "Q4", t: 27 }, { from: "Q2", to: "Z1", t: 32 },
+      { from: "Z5", to: "D1", t: 37 },
+    ],
+    minDel: 4, concepts: ["ref", "sim", "tra", "eq"],
+    msg: "<strong>MESTRE!</strong> Você restaurou a rede e viu como as propriedades de relações aparecem na representação do metrô.",
+  },
+];
+
+const QUIZ_BANK = [
+  { text: "A = {1, 2, 3}<br>R = {(1,1), (2,2), (3,3)}<br>Essa relação é reflexiva?", options: ["Sim", "Não", "Só é simétrica", "Só é transitiva"], answer: "Sim", explanation: "Todos os elementos possuem par consigo mesmos." },
+  { text: "A = {1, 2}<br>R = {(1,1), (1,2)}<br>Essa relação é reflexiva?", options: ["Sim", "Não", "Depende de (1,2)", "É equivalência"], answer: "Não", explanation: "Falta o par (2,2)." },
+  { text: "R = {(A,B), (B,A)}<br>Essa relação é simétrica?", options: ["Sim", "Não", "Só se tiver (A,A)", "Só se tiver (C,C)"], answer: "Sim", explanation: "Se existe A→B, também existe B→A." },
+  { text: "R = {(A,B), (B,C)}<br>Essa relação é transitiva obrigatoriamente?", options: ["Sim", "Não", "Sempre é equivalência", "Só é reflexiva"], answer: "Não", explanation: "Para ser transitiva nesse caso, deveria existir também (A,C)." },
+  { text: "R = {(A,B), (B,C), (A,C)}<br>Essa relação mostra uma ideia de transitividade?", options: ["Sim", "Não", "Só mostra simetria", "Só mostra reflexividade"], answer: "Sim", explanation: "A se relaciona com B, B com C, e A com C." },
+  { text: "Uma relação de equivalência precisa ser:", options: ["Reflexiva, simétrica e transitiva", "Apenas reflexiva", "Apenas simétrica", "Reflexiva e não transitiva"], answer: "Reflexiva, simétrica e transitiva", explanation: "Equivalência reúne as três propriedades ao mesmo tempo." },
+  { text: "No metrô, se uma linha vai da estação Norte para Sul e também volta de Sul para Norte, isso representa:", options: ["Simetria", "Reflexividade", "Ausência de relação", "Conjunto vazio"], answer: "Simetria", explanation: "A ida e a volta representam os pares opostos." },
+  { text: "No metrô, se o passageiro vai de A para B e depois de B para C, chegando de A até C, isso representa:", options: ["Transitividade", "Simetria", "Reflexividade", "Par vazio"], answer: "Transitividade", explanation: "A analogia visual corresponde à exigência do par (A,C) na relação." },
+  { text: "Se toda estação atende a si mesma, qual propriedade aparece?", options: ["Reflexiva", "Simétrica", "Transitiva", "Antissimétrica"], answer: "Reflexiva", explanation: "Reflexiva significa que cada elemento tem par consigo mesmo." },
+  { text: "Se uma rede é reflexiva, simétrica e transitiva, ela é:", options: ["Relação de equivalência", "Relação vazia", "Apenas uma função", "Apenas um conjunto A"], answer: "Relação de equivalência", explanation: "Essa é exatamente a definição de equivalência." },
+];
+
+const AudioSys = {
+  enabled: true,
+  unlocked: false,
+  ctx: null,
+  bg: null,
+  init() {
+    if (this.unlocked) return;
+    this.unlocked = true;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (AC) this.ctx = new AC();
+    this.tryBackground();
+  },
+  async tryBackground() {
+    if (!this.enabled || location.protocol === "file:") return;
+    try {
+      const res = await fetch("assets/audio/background.mp3", { method: "HEAD", cache: "no-store" });
+      if (!res.ok) return;
+      const audio = new Audio("assets/audio/background.mp3");
+      audio.loop = true;
+      audio.volume = .34;
+      this.bg = audio;
+      await audio.play();
+    } catch {}
+  },
+  toggle() {
+    this.enabled = !this.enabled;
+    if (!this.unlocked) this.init();
+    if (!this.enabled) {
+      if (this.bg) this.bg.pause();
+    } else {
+      if (this.bg) this.bg.play().catch(() => {});
+      else this.tryBackground();
+      this.play("unlock");
+    }
+    document.getElementById("sound-menu").textContent = this.enabled ? "SOM ON" : "SOM OFF";
+  },
+  play(kind) {
+    if (!this.enabled) return;
+    if (!this.unlocked) this.init();
+    if (!this.ctx) return;
+    if (this.ctx.state === "suspended") this.ctx.resume();
+    const table = {
+      click: [260, .045, .035],
+      correct: [660, .12, .08],
+      wrong: [130, .18, .09],
+      unlock: [520, .18, .08],
+      victory: [784, .35, .07],
+      train: [196, .2, .08],
+    };
+    const cfg = table[kind] || table.click;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = kind === "wrong" ? "sawtooth" : "square";
+    osc.frequency.value = cfg[0];
+    gain.gain.value = cfg[2];
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start();
+    gain.gain.exponentialRampToValueAtTime(.0001, this.ctx.currentTime + cfg[1]);
+    osc.stop(this.ctx.currentTime + cfg[1] + .02);
+  },
+};
+document.addEventListener("pointerdown", () => AudioSys.init(), { once: true });
+document.addEventListener("click", ev => {
+  if (ev.target.closest("button") && ev.target.id !== "sound-menu") AudioSys.play("click");
+});
+function toggleSound() { AudioSys.toggle(); }
+
+const G = {
+  pi: 0, score: 0, delivered: 0, stranded: 0, linesN: 0,
+  edges: [], paxList: [], paxId: 0,
+  running: false, started: false,
+  tool: "draw", selSt: null,
+  laws: new Set(),
+  loopId: null, loopLast: null, spawnT: 0,
+};
+
+let quiz = { questions: [], index: 0, correct: 0, answered: false, done: false };
+
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+function goMenu() { stopLoop(); showScreen("s-menu"); }
+function goRel() { stopLoop(); showScreen("s-rel"); }
+function goStory() { stopLoop(); showScreen("s-story"); }
+function goQuiz() { stopLoop(); showScreen("s-quiz"); startQuiz(); }
+function goGame() { showScreen("s-game"); loadPhase(G.pi || 0); }
+function closeModal() { document.getElementById("modal-bg").classList.remove("on"); }
+function el(id) { return document.getElementById(id); }
+function mapEl() { return el("map-area"); }
+function ph() { return PHASES[G.pi]; }
+function stById(id) { return ph().stations.find(s => s.id === id); }
+function stPos(st) {
+  const r = mapEl().getBoundingClientRect();
+  return { x: st.rx * r.width, y: st.ry * r.height };
+}
+
+function shuffle(arr) { return [...arr].sort(() => Math.random() - .5); }
+function startQuiz() {
+  quiz = { questions: shuffle(QUIZ_BANK).slice(0, 5), index: 0, correct: 0, answered: false, done: false };
+  el("quiz-next").textContent = "PRÓXIMA";
+  renderQuiz();
+}
+function renderQuiz() {
+  const q = quiz.questions[quiz.index];
+  if (!q) return finishQuiz();
+  quiz.answered = false;
+  el("quiz-counter").textContent = `Pergunta ${quiz.index + 1}/5`;
+  el("quiz-score").textContent = `Acertos: ${quiz.correct}`;
+  el("quiz-progress").style.width = `${quiz.index * 20}%`;
+  el("quiz-question").innerHTML = q.text;
+  el("quiz-feedback").className = "feedback";
+  el("quiz-feedback").textContent = "Escolha uma alternativa para ver o feedback.";
+  el("quiz-next").disabled = true;
+  const opts = el("quiz-options");
+  opts.innerHTML = "";
+  shuffle(q.options).forEach(opt => {
+    const b = document.createElement("button");
+    b.className = "answer-btn";
+    b.type = "button";
+    b.textContent = opt;
+    b.onclick = () => answerQuiz(opt, b);
+    opts.appendChild(b);
+  });
+}
+function answerQuiz(opt, btn) {
+  if (quiz.answered) return;
+  quiz.answered = true;
+  const q = quiz.questions[quiz.index];
+  const ok = opt === q.answer;
+  if (ok) quiz.correct++;
+  document.querySelectorAll(".answer-btn").forEach(b => {
+    b.disabled = true;
+    if (b.textContent === q.answer) b.classList.add("correct");
+  });
+  if (!ok) btn.classList.add("wrong");
+  const fb = el("quiz-feedback");
+  fb.className = `feedback ${ok ? "good" : "bad"}`;
+  fb.innerHTML = `<strong>${ok ? "Correto." : "Ainda não."}</strong> ${q.explanation}`;
+  el("quiz-score").textContent = `Acertos: ${quiz.correct}`;
+  el("quiz-next").disabled = false;
+  AudioSys.play(ok ? "correct" : "wrong");
+}
+function nextQuiz() {
+  if (quiz.done) { goGame(); return; }
+  if (!quiz.answered) return;
+  quiz.index++;
+  renderQuiz();
+}
+function finishQuiz() {
+  quiz.done = true;
+  el("quiz-progress").style.width = "100%";
+  el("quiz-counter").textContent = "Resultado";
+  el("quiz-question").textContent = "Quiz concluído.";
+  el("quiz-options").innerHTML = "";
+  el("quiz-feedback").className = "feedback good";
+  el("quiz-feedback").innerHTML = `Você acertou <strong>${quiz.correct}/5</strong>.`;
+  el("quiz-next").disabled = false;
+  el("quiz-next").textContent = "JOGAR";
+  AudioSys.play("unlock");
+}
+
+function buildAdj() {
+  const adj = {};
+  ph().stations.forEach(s => adj[s.id] = new Set());
+  G.edges.forEach(e => {
+    (adj[e.from] = adj[e.from] || new Set()).add(e.to);
+    (adj[e.to] = adj[e.to] || new Set()).add(e.from);
+  });
+  return adj;
+}
+function canReach(from, to) {
+  if (from === to) return true;
+  const adj = buildAdj();
+  const vis = new Set([from]);
+  const q = [from];
+  while (q.length) {
+    const c = q.shift();
+    for (const n of (adj[c] || [])) {
+      if (n === to) return true;
+      if (!vis.has(n)) { vis.add(n); q.push(n); }
+    }
+  }
+  return false;
+}
+function findPath(from, to) {
+  if (from === to) return [from];
+  const adj = buildAdj();
+  const vis = new Set([from]);
+  const q = [[from, [from]]];
+  while (q.length) {
+    const [c, p] = q.shift();
+    for (const n of (adj[c] || [])) {
+      if (n === to) return [...p, n];
+      if (!vis.has(n)) { vis.add(n); q.push([n, [...p, n]]); }
+    }
+  }
+  return null;
+}
+function allConnected() {
+  const ids = ph().stations.map(s => s.id);
+  for (let i = 0; i < ids.length; i++) {
+    for (let j = i + 1; j < ids.length; j++) {
+      if (!canReach(ids[i], ids[j])) return false;
+    }
+  }
+  return true;
+}
+function checkAllConnectedAdj(adj) {
+  const ids = ph().stations.map(s => s.id);
+  if (ids.length < 2) return true;
+  const vis = new Set([ids[0]]);
+  const q = [ids[0]];
+  while (q.length) {
+    const cur = q.shift();
+    for (const n of (adj[cur] || [])) {
+      if (!vis.has(n)) { vis.add(n); q.push(n); }
+    }
+  }
+  return vis.size === ids.length;
+}
+function edgeRelColor(from, to) {
+  if (G.edges.length === 0) return LC.ref;
+  const adj = buildAdj();
+  adj[from] = adj[from] || new Set();
+  adj[to] = adj[to] || new Set();
+  adj[from].add(to);
+  adj[to].add(from);
+  const ids = ph().stations.map(s => s.id);
+  for (const a of ids) for (const b of (adj[a] || [])) for (const c of (adj[b] || [])) {
+    if (a !== c && !G.edges.some(e => (e.from === a && e.to === c) || (e.from === c && e.to === a))) return LC.tra;
+  }
+  if (checkAllConnectedAdj(adj)) return LC.eq;
+  return LC.sim;
+}
+function canConnect(a, b) {
+  const shA = stById(a)?.sh;
+  const shB = stById(b)?.sh;
+  if (shA === SH.C && shB === SH.C) return { ok: true };
+  if ((shA === SH.C && shB === SH.S) || (shA === SH.S && shB === SH.C)) return { ok: true };
+  if ((shA === SH.S && shB === SH.D) || (shA === SH.D && shB === SH.S)) return { ok: true };
+  if (shA === SH.S && shB === SH.S) return { ok: false, msg: `□ não liga em □! Use um ○ como ponte entre ${a} e ${b}.` };
+  if (shA === SH.D && shB === SH.D) return { ok: false, msg: `◇ não liga em ◇! Use um □ como ponte entre ${a} e ${b}.` };
+  if ((shA === SH.C && shB === SH.D) || (shA === SH.D && shB === SH.C)) return { ok: false, msg: `◇ só liga via □! ${shA === SH.D ? a : b} precisa de quadrado intermediário.` };
+  return { ok: false, msg: "Conexão inválida" };
+}
+function checkRestrict(from, to) {
+  const res = ph().restrict;
+  if (!res) return { ok: true };
+  if (res.type === "no-tra") {
+    const adj = buildAdj();
+    adj[from] = adj[from] || new Set();
+    adj[to] = adj[to] || new Set();
+    adj[from].add(to);
+    adj[to].add(from);
+    const ids = ph().stations.map(s => s.id);
+    for (const a of ids) for (const b of (adj[a] || [])) for (const c of (adj[b] || [])) {
+      if (a !== c) return { ok: false, msg: `Isso criaria cadeia transitiva (${a}→${b}→${c}). Proibido nesta fase!` };
+    }
+  }
+  return { ok: true };
+}
+
+const SR = 16;
+function renderStations() {
+  const g = el("g-stations");
+  g.innerHTML = "";
+  ph().stations.forEach(st => {
+    const { x, y } = stPos(st);
+    const grp = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    grp.id = "stg-" + st.id;
+    grp.appendChild(makeShadow(st, x + 2, y + 2));
+    const body = makeShapeEl(st, x, y, "#fff", "#111", 3);
+    body.id = "stb-" + st.id;
+    body.style.cursor = "pointer";
+    body.addEventListener("click", e => { e.stopPropagation(); onStClick(st.id); });
+    grp.appendChild(body);
+    const sel = makeShapeEl(st, x, y, "none", "#f5c518", 3, SR + 6);
+    sel.id = "sel-" + st.id;
+    sel.style.pointerEvents = "none";
+    sel.setAttribute("stroke-dasharray", "5 3");
+    sel.style.opacity = "0";
+    sel.style.transition = "opacity .15s";
+    grp.appendChild(sel);
+    grp.appendChild(makeTxt(st.id, x, y - SR - 8, "#222", "10px"));
+    grp.appendChild(makeTxt(st.name, x, y + SR + 11, "#777", "9px"));
+    g.appendChild(grp);
+  });
+}
+function makeShapeEl(st, x, y, fill, stroke, sw, r) {
+  const R = r || SR;
+  if (st.sh === SH.C) {
+    const pts = [];
+    for (let i = 0; i < 8; i++) {
+      const a = i / 8 * Math.PI * 2 - Math.PI / 8;
+      pts.push(`${x + Math.round(R * Math.cos(a))},${y + Math.round(R * Math.sin(a))}`);
+    }
+    const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+    poly.setAttribute("points", pts.join(" "));
+    poly.setAttribute("fill", fill);
+    poly.setAttribute("stroke", stroke);
+    poly.setAttribute("stroke-width", sw);
+    return poly;
+  }
+  if (st.sh === SH.S) {
+    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    rect.setAttribute("x", x - R);
+    rect.setAttribute("y", y - R);
+    rect.setAttribute("width", R * 2);
+    rect.setAttribute("height", R * 2);
+    rect.setAttribute("fill", fill);
+    rect.setAttribute("stroke", stroke);
+    rect.setAttribute("stroke-width", sw);
+    return rect;
+  }
+  const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+  poly.setAttribute("points", `${x},${y - R} ${x + R},${y} ${x},${y + R} ${x - R},${y}`);
+  poly.setAttribute("fill", fill);
+  poly.setAttribute("stroke", stroke);
+  poly.setAttribute("stroke-width", sw);
+  return poly;
+}
+function makeShadow(st, x, y) {
+  const s = makeShapeEl(st, x, y, "rgba(0,0,0,.12)", "none", 0);
+  s.style.pointerEvents = "none";
+  return s;
+}
+function makeTxt(txt, x, y, fill, size) {
+  const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
+  t.setAttribute("x", x);
+  t.setAttribute("y", y);
+  t.setAttribute("text-anchor", "middle");
+  t.setAttribute("dominant-baseline", "central");
+  t.setAttribute("font-family", "Courier New, monospace");
+  t.setAttribute("font-size", size);
+  t.setAttribute("font-weight", "700");
+  t.setAttribute("fill", fill);
+  t.style.pointerEvents = "none";
+  t.textContent = txt;
+  return t;
+}
+function renderEdges() {
+  const g = el("g-edges");
+  g.innerHTML = "";
+  G.edges.forEach(e => {
+    const sA = stById(e.from), sB = stById(e.to);
+    if (!sA || !sB) return;
+    const pA = stPos(sA), pB = stPos(sB);
+    const sh = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    sh.setAttribute("x1", pA.x + 2);
+    sh.setAttribute("y1", pA.y + 2);
+    sh.setAttribute("x2", pB.x + 2);
+    sh.setAttribute("y2", pB.y + 2);
+    sh.setAttribute("stroke", "rgba(0,0,0,.2)");
+    sh.setAttribute("stroke-width", "6");
+    sh.setAttribute("stroke-linecap", "square");
+    sh.style.pointerEvents = "none";
+    g.appendChild(sh);
+    const ln = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    ln.setAttribute("x1", pA.x);
+    ln.setAttribute("y1", pA.y);
+    ln.setAttribute("x2", pB.x);
+    ln.setAttribute("y2", pB.y);
+    ln.setAttribute("stroke", e.color);
+    ln.setAttribute("stroke-width", "5");
+    ln.setAttribute("stroke-linecap", "square");
+    ln.style.pointerEvents = "none";
+    g.appendChild(ln);
+    drawArrow(g, pA, pB, e.color, .55);
+    drawArrow(g, pB, pA, e.color, .55);
+  });
+  updateWhiteboard();
+}
+function drawArrow(g, pA, pB, col, t) {
+  const mx = pA.x + (pB.x - pA.x) * t, my = pA.y + (pB.y - pA.y) * t;
+  const ang = Math.atan2(pB.y - pA.y, pB.x - pA.x);
+  const L = 10, W = .4;
+  const poly = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+  poly.setAttribute("points", `${mx},${my} ${mx - L * Math.cos(ang - W)},${my - L * Math.sin(ang - W)} ${mx - L * Math.cos(ang + W)},${my - L * Math.sin(ang + W)}`);
+  poly.setAttribute("fill", col);
+  poly.style.pointerEvents = "none";
+  g.appendChild(poly);
+}
+
+let prevLn = null;
+function initPrev() {
+  const svg = el("gsvg");
+  svg.addEventListener("mousemove", e => {
+    if (!G.selSt || !G.started) return;
+    const r = mapEl().getBoundingClientRect();
+    const mx = e.clientX - r.left, my = e.clientY - r.top;
+    const st = stById(G.selSt);
+    if (!st) return;
+    const p = stPos(st);
+    if (!prevLn) {
+      prevLn = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      prevLn.setAttribute("stroke-width", "4");
+      prevLn.setAttribute("stroke-linecap", "square");
+      prevLn.setAttribute("stroke-dasharray", "7 4");
+      prevLn.style.pointerEvents = "none";
+      el("g-prev").appendChild(prevLn);
+    }
+    prevLn.setAttribute("x1", p.x);
+    prevLn.setAttribute("y1", p.y);
+    prevLn.setAttribute("x2", mx);
+    prevLn.setAttribute("y2", my);
+    prevLn.setAttribute("stroke", "#888");
+    prevLn.setAttribute("opacity", ".65");
+  });
+  svg.addEventListener("click", e => { if (e.target === svg) desel(); });
+}
+function clearPrev() { el("g-prev").innerHTML = ""; prevLn = null; }
+function onStClick(id) {
+  if (!G.started) { toast("w", "Aguarde", "Clique INICIAR PARTIDA primeiro!"); return; }
+  if (G.tool === "erase") {
+    const b = G.edges.length;
+    G.edges = G.edges.filter(e => e.from !== id && e.to !== id);
+    if (G.edges.length < b) {
+      toast("i", "Removido", "Linhas apagadas.");
+      renderEdges();
+      G.linesN = G.edges.length;
+      el("s-ln").textContent = G.linesN;
+    }
+    return;
+  }
+  if (!G.selSt) {
+    G.selSt = id;
+    setSel(id, true);
+    toast("i", "Selecionado", `${id} — clique em outra estação.`);
+  } else if (G.selSt === id) {
+    desel();
+  } else {
+    tryEdge(G.selSt, id);
+    desel();
+  }
+}
+function setSel(id, on) { const r = el("sel-" + id); if (r) r.style.opacity = on ? "1" : "0"; }
+function desel() { if (G.selSt) setSel(G.selSt, false); G.selSt = null; clearPrev(); }
+function tryEdge(from, to) {
+  if (G.edges.some(e => (e.from === from && e.to === to) || (e.from === to && e.to === from))) {
+    toast("w", "Já existe", `${from}↔${to} já estão conectados.`);
+    return;
+  }
+  const rule = canConnect(from, to);
+  if (!rule.ok) {
+    toast("e", "Inválido", rule.msg);
+    AudioSys.play("wrong");
+    flashSt(from);
+    flashSt(to);
+    return;
+  }
+  const res = checkRestrict(from, to);
+  if (!res.ok) {
+    toast("e", "Restrição!", res.msg);
+    AudioSys.play("wrong");
+    return;
+  }
+  const col = edgeRelColor(from, to);
+  G.edges.push({ from, to, color: col });
+  G.linesN = G.edges.length;
+  el("s-ln").textContent = G.linesN;
+  renderEdges();
+  onEdgeAdded();
+  if (G.running) checkAllPax();
+  floatScore("+10");
+  AudioSys.play("correct");
+}
+function flashSt(id) {
+  const b = el("stb-" + id);
+  if (!b) return;
+  b.classList.add("errflash");
+  setTimeout(() => b.classList.remove("errflash"), 700);
+}
+function onEdgeAdded() {
+  if (!G.laws.has("sim")) discoverLaw("sim");
+  if (!G.laws.has("ref") && G.edges.length >= 1) discoverLaw("ref");
+  if (!G.laws.has("tra")) {
+    const adj = buildAdj();
+    outer:
+    for (const a of Object.keys(adj)) for (const b of (adj[a] || [])) for (const c of (adj[b] || [])) {
+      if (c !== a) { discoverLaw("tra"); break outer; }
+    }
+  }
+  if (!G.laws.has("eq") && G.laws.has("ref") && G.laws.has("sim") && G.laws.has("tra") && allConnected()) discoverLaw("eq");
+}
+function discoverLaw(type) {
+  if (G.laws.has(type)) return;
+  G.laws.add(type);
+  const card = el("law-" + type);
+  if (card) card.classList.add("on");
+  const ld = el("ld-" + type);
+  if (ld) ld.textContent = LAWS_D[type].sub;
+  showReveal(type);
+  AudioSys.play("unlock");
+}
+function showReveal(type) {
+  const d = LAWS_D[type];
+  const rv = el("reveal");
+  rv.style.borderColor = d.col;
+  el("rv-name").textContent = d.name;
+  el("rv-name").style.color = d.col;
+  el("rv-sub").textContent = d.sub;
+  rv.classList.add("on");
+  setTimeout(() => rv.classList.remove("on"), 2000);
+}
+function updateWhiteboard() {
+  const ids = ph().stations.map(s => s.id);
+  el("wb-A").textContent = "A = {" + ids.join(", ") + "}";
+  const allPairs = [];
+  ids.forEach(id => allPairs.push({ a: id, b: id, type: "ref" }));
+  G.edges.forEach(e => {
+    allPairs.push({ a: e.from, b: e.to, type: "sim" });
+    allPairs.push({ a: e.to, b: e.from, type: "sim" });
+  });
+  ids.forEach(a => ids.forEach(b => {
+    if (a !== b && canReach(a, b) && !allPairs.some(p => p.a === a && p.b === b)) allPairs.push({ a, b, type: "tra" });
+  }));
+  const isEq = allConnected() && G.edges.length > 0;
+  if (isEq) allPairs.forEach(p => p.type = "eq");
+  const rEl = el("wb-R");
+  if (G.edges.length === 0) {
+    rEl.textContent = "∅  (sem linhas traçadas ainda)";
+    rEl.style.color = "#aaa";
+  } else {
+    rEl.innerHTML = "";
+    allPairs.slice(0, 24).forEach(p => {
+      const sp = document.createElement("span");
+      sp.className = "wb-pair " + p.type;
+      sp.textContent = `(${p.a},${p.b}) `;
+      rEl.appendChild(sp);
+    });
+    if (allPairs.length > 24) {
+      const dots = document.createElement("span");
+      dots.style.color = "#aaa";
+      dots.textContent = `... +${allPairs.length - 24} pares`;
+      rEl.appendChild(dots);
+    }
+  }
+  const isRef = true;
+  const isSim = true;
+  const isTra = G.edges.length > 0 ? allConnected() : false;
+  const isEqFull = isRef && isSim && isTra && allConnected();
+  function wpv(elId, val) {
+    const e = el(elId);
+    if (!e) return;
+    e.textContent = G.edges.length === 0 ? "?" : val ? "✓ SIM" : "✗ NÃO";
+    e.className = G.edges.length === 0 ? "wb-prop-q" : val ? "wb-prop-y" : "wb-prop-n";
+  }
+  wpv("wpr-v", isRef);
+  wpv("wps-v", isSim);
+  wpv("wpt-v", isTra);
+  wpv("wpe-v", isEqFull);
+}
+function spawnPax(cfg) {
+  const id = "p" + (G.paxId++);
+  const pax = { id, from: cfg.from, to: cfg.to, timer: PAX_TIME, maxT: PAX_TIME, status: "wait" };
+  G.paxList.push(pax);
+  const st = stById(cfg.from);
+  if (st) {
+    const { x, y } = stPos(st);
+    const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    dot.setAttribute("cx", x);
+    dot.setAttribute("cy", y - SR - 14);
+    dot.setAttribute("r", "5");
+    dot.setAttribute("fill", "#ff3d5a");
+    dot.style.pointerEvents = "none";
+    let gr = true;
+    const anim = () => {
+      const r = parseFloat(dot.getAttribute("r"));
+      if (gr) { dot.setAttribute("r", r < 7 ? r + .08 : 7); if (r >= 7) gr = false; }
+      else { dot.setAttribute("r", r > 5 ? r - .08 : 5); if (r <= 5) gr = true; }
+      if (pax.status === "wait") requestAnimationFrame(anim);
+    };
+    requestAnimationFrame(anim);
+    el("g-pax-dots").appendChild(dot);
+    pax.dotEl = dot;
+  }
+  const emp = el("tk-empty");
+  if (emp) emp.style.display = "none";
+  const tk = document.createElement("div");
+  tk.className = "ticket wait";
+  tk.id = "tk-" + id;
+  tk.innerHTML = `
+    <div class="tk-route">${cfg.from} → ${cfg.to}</div>
+    <div class="tk-status" id="tks-${id}">aguardando em ${cfg.from}</div>
+    <div class="tk-bar"><div class="tk-fill" id="tkf-${id}" style="width:100%;background:var(--green)"></div></div>
+  `;
+  el("ticket-area").appendChild(tk);
+  pax.tkEl = tk;
+  checkPax(pax);
+}
+function checkPax(p) { if (p.status !== "wait") return; if (canReach(p.from, p.to)) deliverPax(p); }
+function checkAllPax() { G.paxList.filter(p => p.status === "wait").forEach(checkPax); }
+function deliverPax(p) {
+  p.status = "transit";
+  p.dotEl?.remove();
+  const ts = el("tks-" + p.id);
+  if (ts) ts.textContent = "em trânsito...";
+  p.tkEl?.classList.replace("wait", "transit");
+  const path = findPath(p.from, p.to);
+  if (!path) { strandPax(p); return; }
+  AudioSys.play("train");
+  animDot(path, () => {
+    p.status = "done";
+    G.delivered++;
+    G.score += 100;
+    el("h-del").textContent = G.delivered;
+    el("h-score").textContent = G.score;
+    el("s-del").textContent = G.delivered;
+    el("s-tot").textContent = G.score;
+    if (ts) ts.textContent = "chegou!";
+    p.tkEl?.classList.replace("transit", "ok");
+    floatScore("+100");
+    toast("s", "Entregue!", `${p.from}→${p.to} ✓`);
+    if (path.length > 2 && !G.laws.has("tra")) discoverLaw("tra");
+    if (!G.laws.has("eq") && allConnected()) discoverLaw("eq");
+    updateWhiteboard();
+  });
+}
+function strandPax(p) {
+  p.status = "dead";
+  G.stranded++;
+  p.dotEl?.remove();
+  const ts = el("tks-" + p.id);
+  if (ts) ts.textContent = "sem rota!";
+  p.tkEl?.classList.replace("wait", "dead");
+  p.tkEl?.classList.remove("urgent");
+  el("h-str").textContent = G.stranded;
+  el("s-str").textContent = G.stranded;
+  toast("e", "Preso!", `${p.from}→${p.to} sem rota`);
+  AudioSys.play("wrong");
+}
+function animDot(path, done) {
+  const S = 10;
+  const dot = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+  dot.setAttribute("width", S);
+  dot.setAttribute("height", S);
+  dot.setAttribute("fill", "#fff");
+  dot.setAttribute("stroke", "#333");
+  dot.setAttribute("stroke-width", "2");
+  dot.style.pointerEvents = "none";
+  el("g-transit").appendChild(dot);
+  let seg = 0;
+  function go() {
+    if (seg >= path.length - 1) { dot.remove(); done(); return; }
+    const pA = stPos(stById(path[seg])), pB = stPos(stById(path[seg + 1]));
+    const dur = 400, start = performance.now();
+    function frame(now) {
+      const t = Math.min((now - start) / dur, 1);
+      const e = t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      dot.setAttribute("x", pA.x + (pB.x - pA.x) * e - S / 2);
+      dot.setAttribute("y", pA.y + (pB.y - pA.y) * e - S / 2);
+      if (t < 1) requestAnimationFrame(frame);
+      else { seg++; go(); }
+    }
+    requestAnimationFrame(frame);
+  }
+  const p0 = stPos(stById(path[0]));
+  dot.setAttribute("x", p0.x - S / 2);
+  dot.setAttribute("y", p0.y - S / 2);
+  go();
+}
+function startLoop() {
+  if (G.loopId) return;
+  G.loopLast = performance.now();
+  function tick(now) {
+    const dt = Math.min((now - G.loopLast) / 1000, .1);
+    G.loopLast = now;
+    G.spawnT += dt;
+    ph().waves.forEach(w => { if (!w._done && G.spawnT >= w.t) { w._done = true; spawnPax(w); } });
+    G.paxList.filter(p => p.status === "wait").forEach(p => {
+      p.timer -= dt;
+      const pct = Math.max(0, p.timer / p.maxT * 100);
+      const f = el("tkf-" + p.id);
+      if (f) {
+        f.style.width = pct + "%";
+        f.style.background = pct > 50 ? "var(--green)" : pct > 25 ? "var(--yellow)" : "var(--red)";
+      }
+      if (pct < 25) p.tkEl?.classList.add("urgent");
+      if (p.timer <= 0) strandPax(p);
+    });
+    G.loopId = requestAnimationFrame(tick);
+  }
+  G.loopId = requestAnimationFrame(tick);
+}
+function stopLoop() { if (G.loopId) { cancelAnimationFrame(G.loopId); G.loopId = null; } }
+function setTool(t) {
+  G.tool = t;
+  desel();
+  el("btn-draw").style.borderColor = t === "draw" ? "var(--green)" : "var(--bd2)";
+  el("btn-draw").style.color = t === "draw" ? "var(--green)" : "#eef";
+  el("btn-erase").style.borderColor = t === "erase" ? "var(--red)" : "var(--bd2)";
+  el("btn-erase").style.color = t === "erase" ? "var(--red)" : "#eef";
+}
+function startPartida() {
+  G.started = true;
+  el("start-ov").classList.add("gone");
+  toast("i", "Partida iniciada!", "Trace as linhas e ligue o metrô!");
+}
+function toggleRun() {
+  if (!G.started) { toast("w", "Aguarde", "Clique INICIAR PARTIDA primeiro."); return; }
+  G.running = !G.running;
+  el("run-lbl").textContent = G.running ? "■ PARAR" : "▶ METRÔ";
+  el("btn-run").className = "px-btn " + (G.running ? "r" : "g");
+  if (G.running) { startLoop(); toast("i", "Metrô ligado!", "Passageiros chegando..."); AudioSys.play("train"); }
+  else stopLoop();
+}
+function checkPhase() {
+  if (!G.started) { toast("w", "Aguarde", "Inicie a partida primeiro."); return; }
+  const p = ph();
+  const noTra = p.restrict?.type === "no-tra";
+  const minD = p.minDel;
+  if (noTra) {
+    if (G.delivered >= minD) { stopLoop(); G.score += 300; setTimeout(showModal, 300); }
+    else toast("w", "Mais passageiros!", `Entregue mais ${minD - G.delivered} passageiro(s)!`);
+  } else {
+    if (allConnected() && G.delivered >= minD) { stopLoop(); G.score += 300; setTimeout(showModal, 300); }
+    else if (!allConnected()) {
+      const ids = p.stations.map(s => s.id);
+      const hub = ids[0];
+      ids.forEach(id => { if (!canReach(hub, id)) flashSt(id); });
+      toast("e", "Isolado!", "Há estações sem conexão.");
+    } else toast("w", "Quase!", `Entregue mais ${minD - G.delivered} passageiro(s)!`);
+  }
+}
+function skipPhase() {
+  if (G.pi >= PHASES.length - 1) { showModal(); return; }
+  stopLoop();
+  G.pi++;
+  loadPhase(G.pi);
+}
+function resetPhase() {
+  stopLoop();
+  G.edges = [];
+  G.paxList = [];
+  G.linesN = 0;
+  G.spawnT = 0;
+  G.selSt = null;
+  G.running = false;
+  G.started = false;
+  ph().waves.forEach(w => delete w._done);
+  el("run-lbl").textContent = "▶ METRÔ";
+  el("btn-run").className = "px-btn g";
+  el("ticket-area").innerHTML = '<div class="tickets-title">Tickets de Passageiros</div><div style="font-size:10px;color:var(--bd2)" id="tk-empty">Aguardando início...</div>';
+  el("g-pax-dots").innerHTML = "";
+  el("g-transit").innerHTML = "";
+  el("h-del").textContent = G.delivered;
+  el("h-str").textContent = G.stranded;
+  el("s-del").textContent = G.delivered;
+  el("s-str").textContent = G.stranded;
+  el("s-ln").textContent = 0;
+  el("start-ov").classList.remove("gone");
+  setTool("draw");
+  renderStations();
+  renderEdges();
+  clearPrev();
+  updateWhiteboard();
+}
+function showModal() {
+  const p = ph();
+  const isLast = G.pi >= PHASES.length - 1;
+  el("h-score").textContent = G.score;
+  el("s-tot").textContent = G.score;
+  el("m-icon").textContent = isLast ? "🏆" : "🚇";
+  el("m-title").textContent = isLast ? "METROPIXEL RESTAURADO!" : p.name;
+  el("m-body").innerHTML = p.msg;
+  const bw = el("m-badges");
+  bw.innerHTML = "";
+  p.concepts.forEach(c => {
+    const b = document.createElement("span");
+    b.className = "mbadge " + c;
+    b.textContent = LAWS_D[c].name;
+    bw.appendChild(b);
+  });
+  el("m-stats").innerHTML = `
+    <div class="mst"><span class="mst-v">${G.score}</span><span class="mst-l">PONTOS</span></div>
+    <div class="mst"><span class="mst-v">${G.delivered}</span><span class="mst-l">ENTREGUES</span></div>
+    <div class="mst"><span class="mst-v">${G.edges.length}</span><span class="mst-l">LINHAS</span></div>
+  `;
+  const nb = el("m-next");
+  if (isLast) { nb.textContent = "↺ JOGAR NOVAMENTE"; nb.onclick = () => { closeModal(); restartGame(); }; AudioSys.play("victory"); }
+  else { nb.textContent = "PRÓXIMA FASE ▶"; nb.onclick = nextPhase; AudioSys.play("unlock"); }
+  el("modal-bg").classList.add("on");
+}
+function nextPhase() {
+  closeModal();
+  G.pi++;
+  if (G.pi >= PHASES.length) { restartGame(); return; }
+  loadPhase(G.pi);
+}
+function restartGame() {
+  G.pi = 0;
+  G.score = 0;
+  G.delivered = 0;
+  G.stranded = 0;
+  G.laws = new Set();
+  ["ref", "sim", "tra", "eq"].forEach(t => {
+    el("law-" + t).classList.remove("on");
+    el("ld-" + t).textContent = "Bloqueada...";
+  });
+  loadPhase(0);
+}
+function loadPhase(idx) {
+  stopLoop();
+  const p = PHASES[idx];
+  el("pf-n").textContent = p.id;
+  el("pf-name").textContent = p.name;
+  el("pf").classList.add("on");
+  setTimeout(() => el("pf").classList.remove("on"), 650);
+  G.edges = [];
+  G.paxList = [];
+  G.linesN = 0;
+  G.spawnT = 0;
+  G.selSt = null;
+  G.running = false;
+  G.started = false;
+  p.waves.forEach(w => delete w._done);
+  el("h-phase").textContent = `${p.id}/${PHASES.length}`;
+  el("h-score").textContent = G.score;
+  el("h-del").textContent = G.delivered;
+  el("h-str").textContent = G.stranded;
+  el("s-del").textContent = G.delivered;
+  el("s-str").textContent = G.stranded;
+  el("s-tot").textContent = G.score;
+  el("s-ln").textContent = 0;
+  el("mission-text").textContent = p.mission;
+  el("run-lbl").textContent = "▶ METRÔ";
+  el("btn-run").className = "px-btn g";
+  const rb = el("restrict-bar");
+  if (p.restrict) { rb.textContent = p.restrict.label; rb.classList.add("on"); }
+  else { rb.textContent = ""; rb.classList.remove("on"); }
+  el("start-ov").classList.remove("gone");
+  el("so-phase").textContent = "FASE " + p.id;
+  el("so-name").textContent = p.name;
+  el("so-miss").innerHTML = p.mission.replace(/\n/g, "<br>");
+  const sr = el("so-restrict");
+  if (p.restrict) { sr.textContent = p.restrict.label; sr.style.display = "block"; }
+  else { sr.style.display = "none"; }
+  el("ticket-area").innerHTML = '<div class="tickets-title">Tickets de Passageiros</div><div style="font-size:10px;color:var(--bd2)" id="tk-empty">Aguardando início...</div>';
+  el("g-pax-dots").innerHTML = "";
+  el("g-transit").innerHTML = "";
+  setTool("draw");
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    renderStations();
+    renderEdges();
+    clearPrev();
+    updateWhiteboard();
+  }));
+}
+function toast(type, title, body) {
+  const wrap = el("toasts");
+  const t = document.createElement("div");
+  t.className = `toast ${type}`;
+  t.innerHTML = `<div class="th">${title}</div><div class="tbod">${body}</div>`;
+  wrap.appendChild(t);
+  requestAnimationFrame(() => requestAnimationFrame(() => t.classList.add("in")));
+  setTimeout(() => { t.classList.remove("in"); setTimeout(() => t.remove(), 300); }, 3000);
+}
+function floatScore(txt, col = "var(--green)") {
+  const e = document.createElement("div");
+  e.className = "fscore";
+  e.style.color = col;
+  e.textContent = txt;
+  e.style.left = (20 + Math.random() * 60) + "%";
+  e.style.top = "55%";
+  document.body.appendChild(e);
+  setTimeout(() => e.remove(), 1200);
+}
+let rsz = null;
+window.addEventListener("resize", () => {
+  clearTimeout(rsz);
+  rsz = setTimeout(() => {
+    if (document.getElementById("s-game").classList.contains("active")) {
+      renderStations();
+      renderEdges();
+    }
+  }, 150);
+});
+window.addEventListener("load", () => { initPrev(); });
+</script>
+</body>
+</html>
